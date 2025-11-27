@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: 
+            linear-gradient(135deg, rgba(26, 36, 46, 0.85) 0%, rgba(182, 189, 193, 0.85) 100%),
+            url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: white;
+        padding: 4rem 0;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Alternative background options - uncomment one of these: */
+    
+    /* Option 2: Car Engine Background */
+    /*
+    .hero-section {
+        background: 
+            linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 152, 219, 0.9) 100%),
+            url('https://images.unsplash.com/photo-1603712610496-5362a2c93c88?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    */
+    
+    /* Option 3: Car Dashboard Background */
+    /*
+    .hero-section {
+        background: 
+            linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 152, 219, 0.9) 100%),
+            url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    */
+    
+    /* Option 4: Automotive Workshop */
+    /*
+    .hero-section {
+        background: 
+            linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 152, 219, 0.9) 100%),
+            url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+    */
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--primary-gradient);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        color: white;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .hero-section .feature-icon {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+</style>
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">AutoExpert Diagnosis System</h1>
+                <p class="lead mb-4">AI-powered car engine diagnosis with intelligent inference and expert rules</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('infer') }}" class="btn btn-warning btn-lg">
+                        <i class="bi bi-lightning-charge me-2"></i>Run Diagnosis
+                    </a>
+                    <a href="{{ url_for('facts_list') }}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-list-check me-2"></i>Manage Facts
+                    </a>
+                    <a href="{{ url_for('history_list') }}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-clock-history me-2"></i>View History
+                    </a>
+                </div>
+            </div>
+            <!-- <div class="col-lg-4 text-center">
+                <div class="feature-icon">
+                    <i class="bi bi-car-front"></i>
+                </div>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+         <div class="stat-card">
+            <div class="feature-icon">
+                <i class="bi bi-list-check"></i>
+            </div>
+            <h3 class="stat-number">{{ facts_count }}</h3>
+            <p class="text-muted mb-0">Total Facts</p>
+            <a href="{{ url_for('facts_list') }}" class="btn btn-sm btn-primary mt-3">Manage Facts</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="stat-card">
+            <div class="feature-icon">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+            <h3 class="stat-number">{{ rules_count }}</h3>
+            <p class="text-muted mb-0">Expert Rules</p>
+            <a href="{{ url_for('rules_list') }}" class="btn btn-sm btn-success mt-3">Manage Rules</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="stat-card">
+            <div class="feature-icon">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <h3 class="stat-number">{{ (facts_count + rules_count) // 10 }}</h3>
+            <p class="text-muted mb-0">Knowledge Score</p>
+            <a href="{{ url_for('taxonomy_view') }}" class="btn btn-sm btn-warning mt-3">View Taxonomy</a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('facts_new') }}" class="btn btn-outline-primary w-100 h-100 py-3">
+                            <i class="bi bi-plus-circle d-block mb-2" style="font-size: 2rem;"></i>
+                            Add New Fact
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('rules_new') }}" class="btn btn-outline-success w-100 h-100 py-3">
+                            <i class="bi bi-plus-lg d-block mb-2" style="font-size: 2rem;"></i>
+                            Add New Rule
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('infer') }}" class="btn btn-outline-warning w-100 h-100 py-3">
+                            <i class="bi bi-gear d-block mb-2" style="font-size: 2rem;"></i>
+                            Run Inference
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('history_list') }}" class="btn btn-outline-info w-100 h-100 py-3">
+                            <i class="bi bi-clock-history d-block mb-2" style="font-size: 2rem;"></i>
+                            View History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h5>AI Inference Engine</h5>
+                <p class="text-muted">Advanced forward chaining with confidence factors and taxonomy expansion</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="bi bi-car-front"></i>
+                </div>
+                <h5>Car Engine Focus</h5>
+                <p class="text-muted">Specialized in diagnosing common car engine problems and electrical issues</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h5>Expert Validated</h5>
+                <p class="text-muted">Rules and facts validated by automotive experts with real-world testing</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

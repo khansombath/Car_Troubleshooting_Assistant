@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">History Detail {{ hid }}</h2>
+    <div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('history_list') }}">← Back to History</a>
+        <a class="btn btn-primary" href="{{ url_for('infer') }}">Run New Diagnosis</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Timestamp:</strong> {{ item.formatted_timestamp }}</p>
+
+        <p class="mt-3 mb-1"><strong>Observations:</strong></p>
+        <div class="mb-2">
+            {% for fid, conf in item.observations.items() %}
+                <span class="badge bg-primary me-1">
+                    {{ fid }}: {{ "%.2f"|format(conf) }}
+                </span>
+            {% endfor %}
+        </div>
+
+        <p class="mt-3 mb-1"><strong>Expanded Observations (after taxonomy):</strong></p>
+        <div class="mb-2">
+            {% for fid, conf in item.expanded_obs.items() %}
+                {% if conf > 0 %}
+                <span class="badge bg-secondary me-1">
+                    {{ fid }}: {{ "%.2f"|format(conf) }}
+                </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<h5 class="mb-3">Results</h5>
+{% if item.results %}
+    {% for r in item.results %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <h6 class="mb-1">
+                    {{ r.conclusion | replace('_',' ') | title }}
+                </h6>
+                <span class="badge 
+                    {% if r.confidence > 0.7 %}
+                        bg-success
+                    {% elif r.confidence > 0.4 %}
+                        bg-warning text-dark
+                    {% else %}
+                        bg-secondary
+                    {% endif %}">
+                    {{ "%.0f"|format(r.confidence * 100) }}%
+                </span>
+            </div>
+
+            <p class="small text-muted mb-1">
+                <strong>Rule:</strong> {{ r.rule_id }} |
+                <strong>Severity:</strong> 
+                {% if r.confidence >= 0.8 %}
+                    <span class="badge bg-danger">High</span>
+                {% elif r.confidence >= 0.5 %}
+                    <span class="badge bg-warning text-dark">Medium</span>
+                {% else %}
+                    <span class="badge bg-success">Low</span>
+                {% endif %}
+            </p>
+
+            {% if r.explanation %}
+            <p class="mb-1"><strong>Explanation:</strong> {{ r.explanation }}</p>
+            {% endif %}
+
+            {% if r.recommendation %}
+            <p class="mb-0"><strong>Recommendation:</strong> {{ r.recommendation }}</p>
+            {% endif %}
+
+            <div class="mt-2 small text-muted">
+                <strong>Triggered conditions:</strong>
+                {% for cond in r.triggered_conditions %}
+                    <span class="badge bg-info me-1">{{ cond }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-warning">
+        No results recorded for this history item.
+    </div>
+{% endif %}
+{% endblock %}

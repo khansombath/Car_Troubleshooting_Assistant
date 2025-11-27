@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="h4 mb-1">
+            {% if mode == 'new' %}New Fact{% else %}Edit Fact {{ fact.id }}{% endif %}
+        </h2>
+        <p class="text-muted mb-0">
+            {% if mode == 'new' %}Create a new fact for the expert system.{% else %}Modify existing fact.{% endif %}
+        </p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('facts_list') }}">
+        ← Back to Facts
+    </a>
+</div>
+
+<form method="post">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="id" class="form-label">Fact ID</label>
+            <input type="text" class="form-control" id="id" name="id" 
+                   value="{{ fact.id if fact else '' }}" 
+                   {% if mode == 'edit' %}readonly{% endif %} required>
+            <div class="form-text">
+                Unique identifier for the fact (e.g., f1, f2). Must be lowercase, numbers, or underscore.
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <label class="form-label">Value</label>
+            <div class="form-check form-switch mt-2">
+                <input class="form-check-input" type="checkbox" id="value" name="value" 
+                       {% if fact and fact.value %}checked{% endif %}>
+                <label class="form-check-label" for="value">
+                    True/Active (Set this fact as observed)
+                </label>
+            </div>
+        </div>
+        
+        <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required>{{ fact.description if fact else '' }}</textarea>
+            <div class="form-text">Clear description of the symptom or context</div>
+        </div>
+        
+        <div class="col-12">
+            <label for="category" class="form-label">Diagnosis Area</label>
+            <select class="form-select" id="category" name="category">
+                <option value="electrical_symptom" {% if fact and fact.category == 'electrical_symptom' %}selected{% endif %}>Electrical Symptom</option>
+                <option value="starting_symptom" {% if fact and fact.category == 'starting_symptom' %}selected{% endif %}>Starting Symptom</option>
+                <option value="running_symptom" {% if fact and fact.category == 'running_symptom' %}selected{% endif %}>Running Symptom</option>
+                <option value="fuel_symptom" {% if fact and fact.category == 'fuel_symptom' %}selected{% endif %}>Fuel Symptom</option>
+                <option value="environment_context" {% if fact and fact.category == 'environment_context' %}selected{% endif %}>Environment Context</option>
+                <option value="uncategorized" {% if not fact or fact.category == 'uncategorized' %}selected{% endif %}>Uncategorized</option>
+                <option value="uncategorized" {% if not fact or fact.category == 'transmission_symptom' %}selected{% endif %}>transmission_symptom</option>
+                <option value="uncategorized" {% if not fact or fact.category == 'braking_symptom' %}selected{% endif %}>braking_symptom</option>
+                <option value="uncategorized" {% if not fact or fact.category == 'exhaust_symptom' %}selected{% endif %}>exhaust_symptom</option>
+                <option value="uncategorized" {% if not fact or fact.category == 'cooling_symptom' %}selected{% endif %}>cooling_symptom</option>
+            </select>
+            <div class="form-text">
+                Select the appropriate category for taxonomy organization
+            </div>
+        </div>
+        
+        <div class="col-12">
+            <label for="tags" class="form-label">Tags</label>
+            <input type="text" class="form-control" id="tags" name="tags" 
+                   value="{{ fact.tags | join(', ') if fact and fact.tags else '' }}">
+            <div class="form-text">
+                Comma-separated tags (e.g., symptom, starting, electrical)
+            </div>
+        </div>
+        
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+                {% if mode == 'new' %}Create Fact{% else %}Update Fact{% endif %}
+            </button>
+            <a href="{{ url_for('facts_list') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

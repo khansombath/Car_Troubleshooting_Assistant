@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    
+    <table class="table table-light table-hover align-middle">
+        <thead>
+            <tr>
+                <th scope="col" style="width: 10%;">ID</th>
+                <th scope="col" style="width: 30%;">Conditions (IF)</th>
+                <th scope="col" style="width: 25%;">Conclusion (THEN)</th>
+                <th scope="col" style="width: 10%;">CF</th>
+                <th scope="col" style="width: 150px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rule in rules %}
+            <tr>
+                <td><strong>{{ rule.id }}</strong></td>
+                <td>
+                    {% for cond in rule.conditions %}
+                        <span class="badge bg-primary me-1">{{ cond }}</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    <span class="badge bg-success">{{ rule.conclusion }}</span>
+                    <div class="text-muted small mt-1">{{ rule.explain }}</div>
+                </td>
+                <td>
+                    <span class="badge bg-warning text-dark">{{ rule.certainty | default(1.0) }}</span>
+                </td>
+                <td>
+                    <a href="{{ url_for('rules_edit', rid=rule.id) }}" class="btn btn-sm btn-outline-info me-1">Edit</a>
+                    <form method="post" action="{{ url_for('rules_delete', rid=rule.id) }}" 
+                          style="display: inline;" onsubmit="return confirm('Are you sure you want to delete rule {{ rule.id }}?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            
+            {% if not rules %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No rules found. Add one to build your logic!
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Inference Rules ({{ rules | length }})</h2>
+        <a class="btn btn-primary" href="{{ url_for('rules_new') }}">
+            + Add New Rule
+        </a>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        {% if mode == 'new' %}
+                            Add New Rule
+                        {% else %}
+                            Edit Rule {{ rule.id }}
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- Rule ID -->
+                        <div class="mb-3">
+                            <label for="id" class="form-label">Rule ID *</label>
+                            <input type="text" class="form-control" id="id" name="id" 
+                                   value="{{ rule.id if rule else '' }}" 
+                                   {% if mode == 'edit' %}readonly{% endif %} 
+                                   required>
+                            <div class="form-text">Unique identifier for this rule</div>
+                        </div>
+
+                        <!-- Conditions -->
+                        <div class="mb-3">
+                            <label for="conditions" class="form-label">Conditions (IF) *</label>
+                            <input type="text" class="form-control" id="conditions" name="conditions" 
+                                   value="{{ rule.conditions | join(', ') if rule and rule.conditions else '' }}" 
+                                   required>
+                            <div class="form-text">Comma-separated list of fact IDs that must be true</div>
+                        </div>
+
+                        <!-- Conclusion -->
+                        <div class="mb-3">
+                            <label for="conclusion" class="form-label">Conclusion (THEN) *</label>
+                            <input type="text" class="form-control" id="conclusion" name="conclusion" 
+                                   value="{{ rule.conclusion if rule else '' }}" required>
+                            <div class="form-text">The fact ID that will be concluded if conditions are met</div>
+                        </div>
+
+                        <!-- Certainty Factor -->
+                        <div class="mb-3">
+                            <label for="certainty" class="form-label">Certainty Factor (CF)</label>
+                            <input type="number" class="form-control" id="certainty" name="certainty" 
+                                   step="0.1" min="0" max="1" 
+                                   value="{{ rule.certainty if rule and rule.certainty is defined else '0.8' }}">
+                            <div class="form-text">Confidence level between 0.0 and 1.0 (default: 0.8)</div>
+                        </div>
+
+                        <!-- Explanation -->
+                        <div class="mb-3">
+                            <label for="explain" class="form-label">Explanation</label>
+                            <textarea class="form-control" id="explain" name="explain" rows="3">{{ rule.explain if rule else '' }}</textarea>
+                            <div class="form-text">Optional explanation of this rule's logic</div>
+                        </div>
+                        <div class="mb-3">
+    <label for="recommendation" class="form-label">
+        <i class="bi bi-lightbulb text-warning me-1"></i>Recommendation
+    </label>
+    <textarea class="form-control" id="recommendation" name="recommendation" 
+              rows="3" placeholder="Enter recommended actions with icons...">{{ rule.recommendation if rule.recommendation else '' }}</textarea>
+    <div class="form-text">Add repair recommendations with emoji icons (e.g., 🔋 Charge battery...)</div>
+</div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('rules_list') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if mode == 'new' %}
+                                    Create Rule
+                                {% else %}
+                                    Update Rule
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

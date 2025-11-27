@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0"><i class="bi bi-gear me-2"></i>Inference Engine</h3>
+                <p class="mb-0">Set observation confidences and run intelligent diagnosis</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add History Button -->
+
+<!-- Persistence Status -->
+{% if results or obs_conf %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+            <div>
+                <strong>Data Persisted:</strong> Your confidence values and results are automatically saved. 
+                They will remain even if you navigate to other pages.
+                {% if results %}
+                <span class="badge bg-success ms-2">{{ results|length }} results saved</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Rest of your existing template remains exactly the same -->
+<div class="row">
+    <!-- Observations Panel -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+          <!-- In your infer.html template, modify the Observations Panel header -->
+<div class="card-header bg-primary text-white">
+    <h5 class="card-title mb-0">
+        <i class="bi bi-clipboard-data me-2"></i>Observations 
+        <span class="badge bg-light text-dark ms-2">{{ facts|length }} active facts</span>
+    </h5>
+</div>
+            <div class="card-body">
+                <form method="POST" id="inferenceForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Set Confidence Levels (0.0 to 1.0):</label>
+                        <p class="text-muted small">0.0 = Not observed, 1.0 = Definitely observed</p>
+                        
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 80px;">Fact ID</th>
+                                        <th>Description</th>
+                                        <th style="width: 120px;">Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fact in facts %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary">{{ fact.id }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ fact.description }}</small>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm confidence-input" 
+                                                   name="conf_{{ fact.id }}" 
+                                                   min="0" max="1" step="0.1"
+                                                   value="{{ obs_conf.get(fact.id, '0.0') }}"
+                                                   placeholder="0.0">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-warning btn-lg flex-fill">
+                            <i class="bi bi-lightning-charge me-2"></i>Run Diagnosis
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg" id="resetFormBtn">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset Form
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Server-side reset -->
+                <div class="mt-3 pt-3 border-top">
+                    <form method="POST" action="{{ url_for('reset_inference') }}" class="d-grid">
+                        <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                onclick="return confirm('This will clear ALL saved data including confidence values and results. Continue?')">
+                            <i class="bi bi-eraser me-2"></i>Clear All Saved Data
+                        </button>
+                        <small class="text-muted text-center mt-1">Use this to completely reset everything</small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+    
+    <!-- Results Panel -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up-arrow me-2"></i>Diagnosis Results
+                    {% if results %}
+                    <span class="badge bg-light text-dark ms-2">{{ results|length }} findings</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if results %}
+                <!-- Active Observations -->
+                <div class="mb-4">
+                    <h6 class="fw-semibold mb-3"><i class="bi bi-eye me-2"></i>Active Observations:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for fid, conf in expanded_obs.items() %}
+                            {% if conf > 0 %}
+                            <span class="badge bg-primary">
+                                {{ fid }}: {{ "%.2f"|format(conf) }}
+                            </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+             <!-- Diagnosis Findings -->
+<h6 class="fw-semibold mb-3"><i class="bi bi-clipboard-check me-2"></i>Diagnosis Findings:</h6>
+<div class="results-container" style="max-height: 400px; overflow-y: auto;">
+    {% for result in results %}
+    <div class="card mb-3 border-0 {% if loop.first %}bg-light{% endif %}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="card-title mb-0 text-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    {{ result.conclusion | replace('_', ' ') | title }}
+                </h6>
+                <span class="badge {% if result.confidence > 0.7 %}bg-success{% elif result.confidence > 0.4 %}bg-warning{% else %}bg-secondary{% endif %} fs-6">
+                    {{ "%.0f"|format(result.confidence * 100) }}%
+                </span>
+            </div>
+            
+            {% if result.explanation %}
+            <p class="card-text text-muted small mb-2">
+                <i class="bi bi-chat-quote me-1"></i>
+                {{ result.explanation }}
+            </p>
+            {% endif %}
+            
+            {% if result.recommendation %}
+            <div class="alert alert-warning py-2 mb-2">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-tools text-warning fs-5 me-2 mt-1"></i>
+                    <div>
+                        <strong class="small">Recommended Action:</strong>
+                        <p class="mb-0 small">{{ result.recommendation }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="small text-muted">
+                <span class="fw-semibold"><i class="bi bi-link me-1"></i>Rule:</span> 
+                <code>{{ result.rule_id }}</code>
+                <span class="fw-semibold ms-2"><i class="bi bi-lightning me-1"></i>Conditions:</span>
+                {% for cond in result.triggered_conditions %}
+                <span class="badge bg-info me-1">{{ cond }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+    {% endfor %}
+        <div class="row mb-3 mt-5">
+    <div class="col-12">
+        <a href="{{ url_for('history_list') }}" class="btn btn-info">
+            <i class="bi bi-clock-history me-2"></i>View Diagnosis History
+        </a>
+    </div>
+</div>
+</div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="text-muted mb-3" style="font-size: 3rem;">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h5 class="text-muted">No Diagnosis Results</h5>
+                    <p class="text-muted">Set observation confidences and run diagnosis to see results here.</p>
+                    
+                    <!-- Show if we have saved confidence values but no results -->
+                    {% if obs_conf %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        You have saved confidence values but no diagnosis results. 
+                        Click "Run Diagnosis" to analyze.
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instructions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>How to Use the Diagnosis Engine
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="text-primary mb-2" style="font-size: 2rem;">
+                            <i class="bi bi-sliders"></i>
+                        </div>
+                        <h6>Set Confidence</h6>
+                        <p class="small text-muted">Enter values between 0.0 and 1.0 for observed symptoms</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="text-warning mb-2" style="font-size: 2rem;">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h6>Run Diagnosis</h6>
+                        <p class="small text-muted">Click to analyze with the inference engine</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="text-success mb-2" style="font-size: 2rem;">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h6>Review Results</h6>
+                        <p class="small text-muted">Get confidence-ranked diagnosis findings</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="text-info mb-2" style="font-size: 2rem;">
+                            <i class="bi bi-cloud-check"></i>
+                        </div>
+                        <h6>Auto-Save</h6>
+                        <p class="small text-muted">Your work is automatically saved across navigation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Client-side form reset function
+function resetFormValues() {
+    console.log('Reset button clicked'); // Debug log
+    
+    // Reset all confidence inputs to 0.0
+    const inputs = document.querySelectorAll('.confidence-input');
+    inputs.forEach(input => {
+        input.value = '0.0';
+        console.log('Reset input:', input.name, 'to 0.0'); // Debug log
+    });
+    
+    // Show visual feedback
+    const resetBtn = document.getElementById('resetFormBtn');
+    const originalHTML = resetBtn.innerHTML;
+    const originalClass = resetBtn.className;
+    
+    resetBtn.innerHTML = '<i class="bi bi-check me-2"></i>Form Reset!';
+    resetBtn.className = 'btn btn-success btn-lg flex-fill';
+    
+    setTimeout(() => {
+        resetBtn.innerHTML = originalHTML;
+        resetBtn.className = originalClass;
+    }, 1500);
+}
+
+// Initialize when document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Document loaded, setting up reset button'); // Debug log
+    
+    // Add event listener to reset button
+    const resetBtn = document.getElementById('resetFormBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetFormValues);
+        console.log('Reset button event listener added'); // Debug log
+    } else {
+        console.error('Reset button not found!'); // Debug log
+    }
+    
+    // Input validation for confidence inputs
+    const inputs = document.querySelectorAll('.confidence-input');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            let value = parseFloat(this.value);
+            if (isNaN(value)) {
+                this.value = '0.0';
+            } else if (value < 0) {
+                this.value = '0.0';
+            } else if (value > 1) {
+                this.value = '1.0';
+            } else {
+                // Round to 1 decimal place
+                this.value = Math.round(value * 10) / 10;
+            }
+        });
+        
+        // Select all text when focused
+        input.addEventListener('focus', function() {
+            this.select();
+        });
+    });
+    
+    // Auto-scroll to results if they exist
+    // Remove or fix this section based on your template logic
+    // {% if results %}
+    // setTimeout(() => {
+    //     const resultsPanel = document.querySelector('.results-container');
+    //     if (resultsPanel) {
+    //         resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    //     }
+    // }, 500);
+    // {% endif %}
+});
+</script>
+
+<style>
+.confidence-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.results-container {
+    scrollbar-width: thin;
+    scrollbar-color: #6c757d transparent;
+}
+
+.results-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.results-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.results-container::-webkit-scrollbar-thumb {
+    background-color: #6c757d;
+    border-radius: 3px;
+}
+
+.card-header {
+    padding: 1rem 1.25rem;
+}
+</style>
+{% endblock %}

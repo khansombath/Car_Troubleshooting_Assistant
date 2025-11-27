@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<table class="table table-light table-hover align-middle">
+    <thead>
+        <tr>
+            <th scope="col" style="width: 10%;">ID</th>
+            <th scope="col" style="width: 40%;">Description</th>
+            <th scope="col" style="width: 10%;">Value</th>
+            <th scope="col" style="width: 25%;">Tags</th>
+            <th scope="col" style="width: 15%;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fact in facts %}
+        <tr>
+            <td><strong>{{ fact.id }}</strong></td>
+            <td>{{ fact.description }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('facts_toggle', fid=fact.id) }}" style="display: inline;">
+                    {% if fact.value %}
+                        <button type="submit" class="badge bg-success border-0" style="cursor: pointer; padding: 0.5em 0.8em;">
+                            True
+                        </button>
+                    {% else %}
+                        <button type="submit" class="badge bg-secondary border-0" style="cursor: pointer; padding: 0.5em 0.8em;">
+                            False
+                        </button>
+                    {% endif %}
+                </form>
+            </td>
+            <td>
+                {% for tag in fact.tags %}
+                    <span class="badge bg-info me-1 mb-1">{{ tag }}</span>
+                {% endfor %}
+            </td>
+            <td>
+                <a href="{{ url_for('facts_edit', fid=fact.id) }}" class="btn btn-sm btn-outline-info me-1">Edit</a>
+                <form method="post" action="{{ url_for('facts_delete', fid=fact.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('Are you sure you want to delete fact {{ fact.id }}?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+
+        {% if not facts %}
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+                No facts found. Add one to start your knowledge base!
+            </td>
+        </tr>
+        {% endif %}
+    </tbody>
+
+</table>
+    
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Facts ({{ facts | length }})</h2>
+    <a class="btn btn-primary" href="{{ url_for('facts_new') }}">
+        + Add New Fact
+    </a>
+</div>
+
+{% endblock %}
