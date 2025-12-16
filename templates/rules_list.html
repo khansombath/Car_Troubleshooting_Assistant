@@ -1,39 +1,91 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    
-    <table class="table table-light table-hover align-middle">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Inference Rules ({{ rules | length }})</h2>
+    <a class="btn btn-primary" href="{{ url_for('rules_new') }}">
+        + Add New Rule
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-light table-hover align-middle mb-0">
         <thead>
             <tr>
-                <th scope="col" style="width: 10%;">ID</th>
-                <th scope="col" style="width: 30%;">Conditions (IF)</th>
-                <th scope="col" style="width: 25%;">Conclusion (THEN)</th>
-                <th scope="col" style="width: 10%;">CF</th>
-                <th scope="col" style="width: 150px;">Actions</th>
+                <th scope="col" class="d-none d-md-table-cell">ID</th>
+                <th scope="col">Conditions (IF)</th>
+                <th scope="col" class="d-none d-sm-table-cell">Conclusion (THEN)</th>
+                <th scope="col" class="d-none d-lg-table-cell">CF</th>
+                <th scope="col" style="min-width: 100px;">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for rule in rules %}
             <tr>
-                <td><strong>{{ rule.id }}</strong></td>
-                <td>
-                    {% for cond in rule.conditions %}
-                        <span class="badge bg-primary me-1">{{ cond }}</span>
-                    {% endfor %}
+                <!-- ID Column - hidden on mobile -->
+                <td class="d-none d-md-table-cell">
+                    <strong>{{ rule.id }}</strong>
                 </td>
+                
+                <!-- Conditions Column - responsive layout -->
                 <td>
-                    <span class="badge bg-success">{{ rule.conclusion }}</span>
-                    <div class="text-muted small mt-1">{{ rule.explain }}</div>
+                    <div class="d-md-none mb-1">
+                        <small class="text-muted">ID:</small>
+                        <strong>{{ rule.id }}</strong>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for cond in rule.conditions %}
+                            <span class="badge bg-primary">{{ cond }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Conclusion for mobile (hidden on larger screens) -->
+                    <div class="d-sm-none mt-2">
+                        <small class="text-muted">THEN:</small>
+                        <span class="badge bg-success d-block mt-1">{{ rule.conclusion }}</span>
+                        {% if rule.explain %}
+                            <div class="text-muted small mt-1">{{ rule.explain }}</div>
+                        {% endif %}
+                    </div>
                 </td>
-                <td>
+                
+                <!-- Conclusion Column - hidden on mobile -->
+                <td class="d-none d-sm-table-cell">
+                    <span class="badge bg-success mb-1">{{ rule.conclusion }}</span>
+                    {% if rule.explain %}
+                        <div class="text-muted small">{{ rule.explain }}</div>
+                    {% endif %}
+                </td>
+                
+                <!-- CF Column - hidden on mobile and tablet -->
+                <td class="d-none d-lg-table-cell">
                     <span class="badge bg-warning text-dark">{{ rule.certainty | default(1.0) }}</span>
                 </td>
+                
+                <!-- Actions Column - always visible -->
                 <td>
-                    <a href="{{ url_for('rules_edit', rid=rule.id) }}" class="btn btn-sm btn-outline-info me-1">Edit</a>
-                    <form method="post" action="{{ url_for('rules_delete', rid=rule.id) }}" 
-                          style="display: inline;" onsubmit="return confirm('Are you sure you want to delete rule {{ rule.id }}?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+                    <div class="d-flex flex-nowrap gap-1">
+                        <a href="{{ url_for('rules_edit', rid=rule.id) }}" 
+                           class="btn btn-sm btn-outline-info">
+                            <span class="d-none d-sm-inline">Edit</span>
+                            <span class="d-sm-none">✏️</span>
+                        </a>
+                        <form method="post" action="{{ url_for('rules_delete', rid=rule.id) }}" 
+                              class="d-inline" 
+                              onsubmit="return confirm('Delete rule {{ rule.id }}?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <span class="d-none d-sm-inline">Delete</span>
+                                <span class="d-sm-none">🗑️</span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- CF for mobile/tablet (hidden on desktop) -->
+                    <div class="d-lg-none mt-1">
+                        <small class="text-muted">CF:</small>
+                        <span class="badge bg-warning text-dark">{{ rule.certainty | default(1.0) }}</span>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -47,12 +99,38 @@
             {% endif %}
         </tbody>
     </table>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h4 mb-0">Inference Rules ({{ rules | length }})</h2>
-        <a class="btn btn-primary" href="{{ url_for('rules_new') }}">
-            + Add New Rule
-        </a>
-    </div>
+</div>
 
+<style>
+    /* Custom responsive adjustments */
+    @media (max-width: 575.98px) {
+        .table-responsive {
+            border: 0;
+        }
+        
+        .badge {
+            font-size: 0.75em;
+            padding: 0.25em 0.5em;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    }
+    
+    @media (max-width: 767.98px) {
+        .table td, .table th {
+            padding: 0.5rem;
+        }
+    }
+    
+    /* Ensure badges don't overflow on small screens */
+    .badge {
+        word-break: break-word;
+        white-space: normal;
+        text-align: left;
+    }
+</style>
 
 {% endblock %}

@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h4 mb-0">History Detail {{ hid }}</h2>
-    <div>
-        <a class="btn btn-outline-secondary" href="{{ url_for('history_list') }}">← Back to History</a>
-        <a class="btn btn-primary" href="{{ url_for('infer') }}">Run New Diagnosis</a>
+<div class="mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h4 mb-0">History Detail {{ hid }}</h2>
+    </div>
+    
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="{{ url_for('history_list') }}">
+            ← Back
+        </a>
+        <a class="btn btn-primary ms-auto" href="{{ url_for('infer') }}">
+            New Diagnosis
+        </a>
     </div>
 </div>
-
 <div class="card mb-3">
     <div class="card-body">
         <p><strong>Timestamp:</strong> {{ item.formatted_timestamp }}</p>
@@ -25,7 +31,7 @@
         <div class="mb-2">
             {% for fid, conf in item.expanded_obs.items() %}
                 {% if conf > 0 %}
-                <span class="badge bg-secondary me-1">
+                <span class="badge bg-secondary me-1 mb-1">
                     {{ fid }}: {{ "%.2f"|format(conf) }}
                 </span>
                 {% endif %}

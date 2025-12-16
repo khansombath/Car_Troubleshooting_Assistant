@@ -1,67 +1,195 @@
 {% extends 'base.html' %}
 {% block content %}
 
-
-<table class="table table-light table-hover align-middle">
-    <thead>
-        <tr>
-            <th scope="col" style="width: 10%;">ID</th>
-            <th scope="col" style="width: 40%;">Description</th>
-            <th scope="col" style="width: 10%;">Value</th>
-            <th scope="col" style="width: 25%;">Tags</th>
-            <th scope="col" style="width: 15%;">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for fact in facts %}
-        <tr>
-            <td><strong>{{ fact.id }}</strong></td>
-            <td>{{ fact.description }}</td>
-            <td>
-                <form method="POST" action="{{ url_for('facts_toggle', fid=fact.id) }}" style="display: inline;">
-                    {% if fact.value %}
-                        <button type="submit" class="badge bg-success border-0" style="cursor: pointer; padding: 0.5em 0.8em;">
-                            True
-                        </button>
-                    {% else %}
-                        <button type="submit" class="badge bg-secondary border-0" style="cursor: pointer; padding: 0.5em 0.8em;">
-                            False
-                        </button>
-                    {% endif %}
-                </form>
-            </td>
-            <td>
-                {% for tag in fact.tags %}
-                    <span class="badge bg-info me-1 mb-1">{{ tag }}</span>
-                {% endfor %}
-            </td>
-            <td>
-                <a href="{{ url_for('facts_edit', fid=fact.id) }}" class="btn btn-sm btn-outline-info me-1">Edit</a>
-                <form method="post" action="{{ url_for('facts_delete', fid=fact.id) }}"
-                      style="display:inline;"
-                      onsubmit="return confirm('Are you sure you want to delete fact {{ fact.id }}?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-
-        {% if not facts %}
-        <tr>
-            <td colspan="5" class="text-center text-muted py-4">
-                No facts found. Add one to start your knowledge base!
-            </td>
-        </tr>
-        {% endif %}
-    </tbody>
-
-</table>
-    
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="h4 mb-0">Facts ({{ facts | length }})</h2>
     <a class="btn btn-primary" href="{{ url_for('facts_new') }}">
         + Add New Fact
     </a>
 </div>
+
+<div class="table-responsive">
+    <table class="table table-light table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th scope="col" class="d-none d-md-table-cell" style="width: 10%;">ID</th>
+                <th scope="col" style="width: 40%;">Description</th>
+                <th scope="col" style="width: 15%;">Value</th>
+                <th scope="col" class="d-none d-sm-table-cell" style="width: 25%;">Tags</th>
+                <th scope="col" style="min-width: 130px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fact in facts %}
+            <tr>
+                <!-- ID Column - hidden on mobile -->
+                <td class="d-none d-md-table-cell">
+                    <strong>{{ fact.id }}</strong>
+                </td>
+                
+                <!-- Description Column -->
+                <td>
+                    <!-- Show ID on mobile -->
+                    <div class="d-md-none mb-1">
+                        <small class="text-muted">ID:</small>
+                        <strong>{{ fact.id }}</strong>
+                    </div>
+                    {{ fact.description }}
+                    
+                    <!-- Show tags on mobile -->
+                    <div class="d-sm-none mt-2">
+                        {% for tag in fact.tags %}
+                            <span class="badge bg-info me-1 mb-1">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                
+                <!-- Value Column -->
+                <td>
+                    <form method="POST" action="{{ url_for('facts_toggle', fid=fact.id) }}" 
+                          class="d-inline-block" 
+                          onsubmit="return true;">
+                        {% if fact.value %}
+                            <button type="submit" 
+                                    class="badge bg-success border-0" 
+                                    style="cursor: pointer; padding: 0.5em 0.8em; min-width: 60px;">
+                                True
+                            </button>
+                        {% else %}
+                            <button type="submit" 
+                                    class="badge bg-secondary border-0" 
+                                    style="cursor: pointer; padding: 0.5em 0.8em; min-width: 60px;">
+                                False
+                            </button>
+                        {% endif %}
+                    </form>
+                </td>
+                
+                <!-- Tags Column - hidden on mobile -->
+                <td class="d-none d-sm-table-cell">
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for tag in fact.tags %}
+                            <span class="badge bg-info">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                
+                <!-- Actions Column -->
+                <td>
+                    <div class="d-flex flex-nowrap gap-1">
+                        <a href="{{ url_for('facts_edit', fid=fact.id) }}" 
+                           class="btn btn-sm btn-outline-info">
+                            <span class="d-none d-sm-inline">Edit</span>
+                            <span class="d-sm-none">✏️</span>
+                        </a>
+                        <form method="post" 
+                              action="{{ url_for('facts_delete', fid=fact.id) }}"
+                              class="d-inline"
+                              onsubmit="return confirm('Delete fact {{ fact.id }}?');">
+                            <button type="submit" 
+                                    class="btn btn-sm btn-outline-danger">
+                                <span class="d-none d-sm-inline">Delete</span>
+                                <span class="d-sm-none">🗑️</span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+
+            {% if not facts %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No facts found. Add one to start your knowledge base!
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* Responsive adjustments */
+    @media (max-width: 575.98px) {
+        .table-responsive {
+            border: 0;
+            margin: 0 -1rem;
+            width: calc(100% + 2rem);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .badge {
+            font-size: 0.75em;
+            padding: 0.4em 0.6em !important;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        td, th {
+            padding: 0.75rem 0.5rem !important;
+        }
+        
+        /* Ensure toggle button is touch-friendly on mobile */
+        .badge[style*="cursor: pointer"] {
+            padding: 0.6em 1em !important;
+            font-size: 0.85em;
+        }
+    }
+    
+    @media (max-width: 767.98px) {
+        .table td, .table th {
+            padding: 0.75rem;
+        }
+        
+        /* Adjust column widths for tablet */
+        td:nth-child(2), /* Description */
+        th:nth-child(2) {
+            width: 50% !important;
+        }
+        
+        td:nth-child(3), /* Value */
+        th:nth-child(3) {
+            width: 20% !important;
+        }
+    }
+    
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        /* Tablet optimizations */
+        td:nth-child(2), /* Description */
+        th:nth-child(2) {
+            width: 35% !important;
+        }
+        
+        td:nth-child(4), /* Tags */
+        th:nth-child(4) {
+            width: 30% !important;
+        }
+    }
+    
+    /* Prevent long text from breaking layout */
+    td:nth-child(2) {
+        word-break: break-word;
+    }
+    
+    /* Make badges wrap nicely */
+    .badge {
+        white-space: normal;
+        word-break: break-word;
+        max-width: 100%;
+    }
+    
+    /* Ensure toggle buttons maintain consistent size */
+    .badge[style*="cursor: pointer"] {
+        min-width: 60px;
+        text-align: center;
+        display: inline-block;
+    }
+</style>
 
 {% endblock %}
